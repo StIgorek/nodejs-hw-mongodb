@@ -13,9 +13,11 @@ export const startServer = () => {
   app.use(express.json());
   //app.use(logger);
 
+
   app.use("/contacts", contactsRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
+
 
   const port = Number(env("PORT", 3000));
   app.listen(port, () => console.log(`Server running on ${port} PORT`));
