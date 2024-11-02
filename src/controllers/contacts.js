@@ -1,4 +1,5 @@
 import * as contactServices from "../services/contacts.js";
+import mongoose from "mongoose";
 import createHttpError from "http-errors";
 
 export const getContactsController = async (req, res) => {
@@ -10,8 +11,13 @@ export const getContactsController = async (req, res) => {
   });
 };
 
-export const getContactByIdController = async (req, res) => {
+export const getContactByIdController = async (req, res, next) => {
   const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw createHttpError(404, 'Contact not found');
+  }
+
   const data = await contactServices.getContactById(id);
 
   if (!data) {
@@ -39,6 +45,11 @@ export const addContactController = async (req, res) => {
 
 export const patchContactController = async (req, res) => {
   const { id: _id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    throw createHttpError(404, 'Contact not found');
+  }
+
   const result = await contactServices.updateContact({ _id, payload: req.body });
 
   if (!result) {
@@ -56,6 +67,11 @@ export const patchContactController = async (req, res) => {
 
 export const deleteContactController = async (req, res) => {
   const { id: _id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    throw createHttpError(404, 'Contact not found');
+  }
+
   const result = await contactServices.deleteContact({ _id });
 
   if (!result) {
