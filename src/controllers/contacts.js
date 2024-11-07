@@ -2,6 +2,7 @@ import * as contactServices from "../services/contacts.js";
 import mongoose from "mongoose";
 import createHttpError from "http-errors";
 
+
 export const getContactsController = async (req, res) => {
   const data = await contactServices.getContacts();
   res.json({
@@ -35,6 +36,7 @@ export const getContactByIdController = async (req, res, next) => {
 };
 
 export const addContactController = async (req, res) => {
+
   const data = await contactServices.addContact(req.body);
   res.status(201).json({
     status: 201,

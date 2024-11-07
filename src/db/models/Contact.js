@@ -17,6 +17,7 @@ const contactSchema = new Schema({
   isFavourite: {
     type: Boolean,
     default: false,
+    required: true,
   },
   contactType: {
     type: String,
@@ -24,11 +25,7 @@ const contactSchema = new Schema({
     required: true,
     default: "personal",
   },
-},
-  {
-    timestamps: true,
-    versionKey: false,
-  },
+}, { timestamps: true, versionKey: false, },
 );
 contactSchema.post("save", handleSaveError);
 contactSchema.pre("findOneAndUpdate", setUpdateSettings);
