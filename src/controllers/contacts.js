@@ -1,16 +1,18 @@
 import * as contactServices from "../services/contacts.js";
-//import mongoose from "mongoose";
 import createHttpError from "http-errors";
 import { parsePaginationParams } from "../utils/parsePaginationParams.js";
 import { parseSortParams } from "../utils/parseSortParams.js";
 import { sortByList } from "../db/models/Contact.js";
+import { parseContactsFilterParams } from "../utils/parseContactsFilterParams.js";
 
 
 export const getContactsController = async (req, res) => {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query, sortByList);
+  const filter = parseContactsFilterParams(req.query);
+  console.log(filter);
 
-  const data = await contactServices.getContacts({ page, perPage, sortBy, sortOrder });
+  const data = await contactServices.getContacts({ page, perPage, sortBy, sortOrder, filter });
 
   res.json({
     status: 200,
