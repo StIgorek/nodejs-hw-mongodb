@@ -3,9 +3,9 @@ import cors from "cors";
 import { env } from "./utils/env.js";
 //import { logger } from "../src/middlewares/logger.js";
 import contactsRouter from "./routers/contacts.js";
+import authRouter from "./routers/auth.js";
 import { notFoundHandler } from "../src/middlewares/notFoundHandler.js";
 import { errorHandler } from "../src/middlewares/errorHandler.js";
-
 
 export const startServer = () => {
   const app = express();
@@ -13,8 +13,8 @@ export const startServer = () => {
   app.use(express.json());
   //app.use(logger);
 
-
   app.use("/contacts", contactsRouter);
+  app.use("/auth", authRouter);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
