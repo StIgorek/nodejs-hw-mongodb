@@ -13,7 +13,7 @@ export const userSchema = new Schema({
     unique: true,
     required: true
   },
-  passward: {
+  password: {
     type: String,
     required: true
   },
