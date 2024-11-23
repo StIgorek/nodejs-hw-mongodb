@@ -8,6 +8,8 @@ import { authRegisterSchema, authLoginSchema } from "../validation/auth.js";
 const authRouter = Router();
 
 authRouter.post("/register", validateBody(authRegisterSchema), ctrlWrapper(authControllers.registerController));
+authRouter.get("/verify", ctrlWrapper(authControllers.verifyController));
+
 authRouter.post("/login", validateBody(authLoginSchema), ctrlWrapper(authControllers.loginController));
 
 authRouter.post("/refresh", ctrlWrapper(authControllers.refreshSessionController));
