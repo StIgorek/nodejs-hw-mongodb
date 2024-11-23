@@ -3,7 +3,7 @@ import { handleSaveError, setUpdateSettings } from "./hooks.js";
 import { emailRegexp } from "../../constants/users.js";
 
 export const userSchema = new Schema({
-  username: {
+  name: {
     type: String,
     required: true
   },
@@ -22,6 +22,12 @@ export const userSchema = new Schema({
 userSchema.post("save", handleSaveError);
 userSchema.pre("findOneAndUpdate", setUpdateSettings);
 userSchema.post("findOneAndUpdate", handleSaveError);
+
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
 
 const UserCollection = model("user", userSchema);
 
