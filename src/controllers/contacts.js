@@ -26,12 +26,13 @@ export const getContactsController = async (req, res) => {
 
 export const getContactByIdController = async (req, res, next) => {
   const { id } = req.params;
+  const userId = req.user._id;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw createHttpError(404, 'Contact not found');
   }
 
-  const data = await contactServices.getContactById(id);
+  const data = await contactServices.getContactById(id, userId);
 
   if (!data) {
     throw createHttpError(404, `Contact with id=${id} not found`);
@@ -59,12 +60,13 @@ export const addContactController = async (req, res) => {
 
 export const patchContactController = async (req, res) => {
   const { id: _id } = req.params;
+  const userId = req.user._id;
 
   if (!mongoose.Types.ObjectId.isValid(_id)) {
     throw createHttpError(404, 'Contact not found');
   }
 
-  const result = await contactServices.updateContact({ _id, payload: req.body });
+  const result = await contactServices.updateContact({ _id, payload: req.body, userId });
 
   if (!result) {
     throw createHttpError(404, `Contact with id=${_id} not found`);
@@ -81,12 +83,13 @@ export const patchContactController = async (req, res) => {
 
 export const deleteContactController = async (req, res) => {
   const { id: _id } = req.params;
+  const userId = req.user._id;
 
   if (!mongoose.Types.ObjectId.isValid(_id)) {
     throw createHttpError(404, 'Contact not found');
   }
 
-  const result = await contactServices.deleteContact({ _id });
+  const result = await contactServices.deleteContact({ _id }, userId);
 
   if (!result) {
     throw createHttpError(404, `Contact with id=${_id} not found`);
