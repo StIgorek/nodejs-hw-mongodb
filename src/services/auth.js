@@ -34,7 +34,6 @@ export const register = async payload => {
   if (user) {
     throw createHttpError(409, "Email in use");
   };
-
   // const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, 10);
 
@@ -70,13 +69,11 @@ export const verify = async token => {
 
 export const login = async ({ email, password }) => {
   const user = await UserCollection.findOne({ email });
-  if (!user) {
-    throw createHttpError(401, "Email invalid!");
-  };
+  if (!user) { throw createHttpError(401, "Email invalid!"); };
+  if (!user.verify) { throw createHttpError(401, "Email not verified!"); };
+
   const passwordCompare = await bcrypt.compare(password, user.password);
-  if (!passwordCompare) {
-    throw createHttpError(401, "Password invalid!");
-  };
+  if (!passwordCompare) { throw createHttpError(401, "Password invalid!"); };
 
   await SessionCollection.deleteOne({ userId: user._id });
 
