@@ -1,9 +1,20 @@
 import UserCollection from "../db/models/User.js";
 import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
+import * as path from "node:path";
+import * as fs from "node:fs/promises";
+import { TEMPLATE_DIR } from "../constants/index.js";
 import { randomBytes } from "crypto";
 import SessionCollection from "../db/models/Session.js";
 import { accessTokenLifetime, refreshTokenLifetime } from "../constants/users.js";
+import { sendEmail } from "../utils/sendEmail.js";
+import { env } from "../utils/env.js";
+import Handlebars from "handlebars";
+import jwt from "jsonwebtoken";
+
+const emailTemplatePath = path.join(TEMPLATE_DIR, "verify-email.html");
+const appDomain = env("APP_DOMAIN");
+const jwtSecret = env("JWT_SECRET"); //https://randomkeygen.com/ 256-bit
 
 const createSession = () => {
   const accessToken = randomBytes(30).toString("base64");
@@ -27,7 +38,34 @@ export const register = async payload => {
   // const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, 10);
 
-  return UserCollection.create({ ...payload, password: hashPassword });
+  const newUser = await UserCollection.create({ ...payload, password: hashPassword });
+
+  const templateSource = await fs.readFile(emailTemplatePath, "utf-8");
+  const template = Handlebars.compile(templateSource);
+  const token = jwt.sign({ email }, jwtSecret, { expiresIn: "24h" });
+  const html = template({ link: `${appDomain}/auth/verify?token=${token}` });
+
+  const verifyEmail = {
+    to: email,
+    subject: "Verify your email",
+    html
+  };
+  await sendEmail(verifyEmail);
+  return newUser;
+};
+
+export const verify = async token => {
+  try {
+    const { email } = jwt.verify(token, jwtSecret);
+    const user = findUser({ email });
+    if (!user) {
+      throw createHttpError(404, `${email} not found`);
+    }
+    return await UserCollection.findByIdAndUpdate(user._id, { verify: true });
+  }
+  catch (error) {
+    throw createHttpError(401, error.message);
+  };
 };
 
 export const login = async ({ email, password }) => {
