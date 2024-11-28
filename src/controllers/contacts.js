@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 import createHttpError from "http-errors";
 import * as contactServices from "../services/contacts.js";
+import * as path from "node:path";
 import { parsePaginationParams } from "../utils/parsePaginationParams.js";
 import { parseSortParams } from "../utils/parseSortParams.js";
 import { sortByList } from "../db/models/Contact.js";
 import { parseContactsFilterParams } from "../utils/parseContactsFilterParams.js";
+import { saveFileToUploadDir } from "../utils/saveFileToUploadDir.js";
 
 
 export const getContactsController = async (req, res) => {
@@ -50,7 +52,13 @@ export const getContactByIdController = async (req, res, next) => {
 
 export const addContactController = async (req, res) => {
   const { _id: userId } = req.user;
-  const data = await contactServices.addContact({ ...req.body, userId });
+  let photo = null;
+  if (req.file) {
+    await saveFileToUploadDir(req.file);
+    photo = path.join("uploads", req.file.filename);
+  };
+
+  const data = await contactServices.addContact({ ...req.body, photo, userId });
   res.status(201).json({
     status: 201,
     message: "Successfully created a contact!",
