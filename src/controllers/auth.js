@@ -1,4 +1,4 @@
-//import createHttpError from "http-errors";
+
 import * as authServices from "../services/auth.js";
 
 const setupSession = (res, session) => {
@@ -17,10 +17,21 @@ const setupSession = (res, session) => {
 
 export const registerController = async (req, res) => {
   const data = await authServices.register(req.body);
+
+  console.log(data);
   res.status(201).json({
     status: 201,
     message: "Successfully registered a user!",
     data
+  });
+};
+
+export const verifyController = async (req, res) => {
+  const { token } = req.query;
+  await authServices.verify(token);
+  res.json({
+    status: 200,
+    message: "User verified successfully!"
   });
 };
 
