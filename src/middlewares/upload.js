@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
   //}
   destination: TEMP_UPLOAD_DIR,
   filename: (req, file, callback) => {
-    const uniquePrefix = `${Date.now()}_${Math.round(Math.random() * 19)}`;
+    const uniquePrefix = `${Date.now()}_${Math.round(Math.random() * 1E9)}`;
     const filename = `${uniquePrefix}_${file.originalname}`;
     callback(null, filename);
   }
@@ -21,7 +21,7 @@ const limits = {
 const fileFilter = (req, file, callback) => {
   const extension = file.originalname.split(".").pop();
   if (extension === "exe") {
-    return callback(createHttpError(400, ".exe extension not allow"));
+    return callback(createHttpError(400, ".exe extension not allow!"));
   };
   callback(null, true);
 };

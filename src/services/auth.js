@@ -9,10 +9,10 @@ import SessionCollection from "../db/models/Session.js";
 import { accessTokenLifetime, refreshTokenLifetime } from "../constants/users.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { env } from "../utils/env.js";
-import Handlebars from "handlebars";
+//import Handlebars from "handlebars";
 import jwt from "jsonwebtoken";
 
-const emailTemplatePath = path.join(TEMPLATE_DIR, "verify-email.html");
+//const emailTemplatePath = path.join(TEMPLATE_DIR, "verify-email.html");
 const appDomain = env("APP_DOMAIN");
 const jwtSecret = env("JWT_SECRET"); //https://randomkeygen.com/ 256-bit
 
@@ -39,17 +39,17 @@ export const register = async payload => {
 
   const newUser = await UserCollection.create({ ...payload, password: hashPassword });
 
-  const templateSource = await fs.readFile(emailTemplatePath, "utf-8");
-  const template = Handlebars.compile(templateSource);
-  const token = jwt.sign({ email }, jwtSecret, { expiresIn: "24h" });
-  const html = template({ link: `${appDomain}/auth/verify?token=${token}` });
+  //const templateSource = await fs.readFile(emailTemplatePath, "utf-8");
+  //const template = Handlebars.compile(templateSource);
+  //const token = jwt.sign({ email }, jwtSecret, { expiresIn: "24h" });
+  //const html = template({ link: `${appDomain}/auth/verify?token=${token}` });
 
-  const verifyEmail = {
-    to: email,
-    subject: "Verify your email",
-    html
-  };
-  await sendEmail(verifyEmail);
+  //const verifyEmail = {
+  //  to: email,
+  //  subject: "Verify your email",
+  //  html
+  //};
+  //await sendEmail(verifyEmail);
   return newUser;
 };
 
@@ -70,7 +70,7 @@ export const verify = async token => {
 export const login = async ({ email, password }) => {
   const user = await UserCollection.findOne({ email });
   if (!user) { throw createHttpError(401, "Email invalid!"); };
-  if (!user.verify) { throw createHttpError(401, "Email not verified!"); };
+  //if (!user.verify) { throw createHttpError(401, "Email not verified!"); };
 
   const passwordCompare = await bcrypt.compare(password, user.password);
   if (!passwordCompare) { throw createHttpError(401, "Password invalid!"); };
@@ -111,3 +111,56 @@ export const logout = sessionId => SessionCollection.deleteOne({ _id: sessionId 
 export const findSession = filter => SessionCollection.findOne(filter);
 
 export const findUser = filter => UserCollection.findOne(filter);
+
+export const requestResetToken = async (email) => {
+  const user = await UserCollection.findOne({ email });
+
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  };
+
+  const resetToken = jwt.sign({ sub: user._id, email }, jwtSecret, { expiresIn: "5m" });
+
+  const resetLink = `${appDomain}/reset-password?token=${resetToken}`;
+
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Reset your password',
+      html: `<p>Click <a href="${resetLink}">here</a> to reset your password!</p>`,
+    });
+  } catch (error) {
+    throw createHttpError(500, 'Failed to send the email, please try again later.');
+  }
+};
+
+export const resetPassword = async (payload) => {
+  let entries;
+
+  try {
+    entries = jwt.verify(payload.token, jwtSecret);
+  } catch (error) {
+    if (error.name === "TokenExpiredError" || error.name === "JsonWebTokenError") {
+      throw createHttpError(401, "Token is expired or invalid!");
+    }
+    throw error;
+  }
+
+  const user = await UserCollection.findOne({
+    email: entries.email,
+    _id: entries.sub,
+  });
+
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+
+  const encryptedPassword = await bcrypt.hash(payload.password, 10);
+
+  await SessionCollection.deleteOne({ userId: user.id });
+
+  await UserCollection.updateOne(
+    { _id: user._id },
+    { password: encryptedPassword },
+  );
+};

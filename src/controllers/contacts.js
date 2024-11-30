@@ -58,13 +58,12 @@ export const addContactController = async (req, res) => {
   let photo = null;
   if (req.file) {
     if (enableCloudinary === "true") {
-      photo = await saveFileToCloudinary(req.file, "photos");
+      photo = await saveFileToCloudinary(req.file, "photo");
     }
     else {
       await saveFileToUploadDir(req.file);
       photo = path.join(req.file.filename);
     }
-
   };
 
   const data = await contactServices.addContact({ ...req.body, photo, userId });
@@ -78,12 +77,22 @@ export const addContactController = async (req, res) => {
 export const patchContactController = async (req, res) => {
   const { id: _id } = req.params;
   const userId = req.user._id;
+  let photo = null;
+  if (req.file) {
+    if (enableCloudinary === "true") {
+      photo = await saveFileToCloudinary(req.file, "photo");
+    }
+    else {
+      await saveFileToUploadDir(req.file);
+      photo = path.join(req.file.filename);
+    }
+  };
 
   if (!mongoose.Types.ObjectId.isValid(_id)) {
     throw createHttpError(404, 'Contact not found');
   }
 
-  const result = await contactServices.updateContact({ _id, payload: req.body, userId });
+  const result = await contactServices.updateContact({ _id, payload: { ...req.body, photo }, userId });
 
   if (!result) {
     throw createHttpError(404, `Contact with id=${_id} not found`);

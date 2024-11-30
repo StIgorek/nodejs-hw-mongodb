@@ -26,7 +26,7 @@ contactsRouter.get("/:id", isValidId, ctrlWrapper(getContactByIdController));
 //upload.fields([{name: "photo", maxCount: 1}, {name: "subphotos", maxCount: 3}])
 contactsRouter.post("/", upload.single("photo"), validateBody(createContactSchema), ctrlWrapper(addContactController));
 
-contactsRouter.patch("/:id", isValidId, validateBody(patchContactSchema), ctrlWrapper(patchContactController));
+contactsRouter.patch("/:id", isValidId, upload.single("photo"), validateBody(patchContactSchema), ctrlWrapper(patchContactController));
 
 contactsRouter.delete("/:id", isValidId, ctrlWrapper(deleteContactController));
 

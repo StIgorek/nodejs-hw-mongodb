@@ -17,10 +17,6 @@ export const saveFileToCloudinary = async (file, folder) => {
     const response = await cloudinary.uploader.upload(file.path, { folder });
     return response.secure_url;
   }
-  catch (error) {
-    throw error;
-  }
-  finally { await unlink(file.path) }; //видаляємо завантаження
-
-
+  catch (error) { throw error; }
+  finally { await unlink(file.path); } //видаляємо завантаження
 };
