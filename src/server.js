@@ -13,6 +13,7 @@ export const startServer = () => {
   app.use(cors());
   app.use(express.json());
   app.use(cookieParser());
+  app.use(express.static("uploads")); //назва папки з якої можна видавати файли на фронт
   //app.use(logger);
 
   app.use("/contacts", contactsRouter);
