@@ -9,10 +9,10 @@ import SessionCollection from "../db/models/Session.js";
 import { accessTokenLifetime, refreshTokenLifetime } from "../constants/users.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { env } from "../utils/env.js";
-//import Handlebars from "handlebars";
+import handlebars from "handlebars";
 import jwt from "jsonwebtoken";
 
-//const emailTemplatePath = path.join(TEMPLATE_DIR, "verify-email.html");
+const emailTemplatePath = path.join(TEMPLATE_DIR, "verify-email.html");
 const appDomain = env("APP_DOMAIN");
 const jwtSecret = env("JWT_SECRET"); //https://randomkeygen.com/ 256-bit
 
@@ -121,17 +121,24 @@ export const requestResetToken = async (email) => {
 
   const resetToken = jwt.sign({ sub: user._id, email }, jwtSecret, { expiresIn: "5m" });
 
+  const templateSource = (
+    await fs.readFile(emailTemplatePath)
+  ).toString();
+
+  const template = handlebars.compile(templateSource);
   const resetLink = `${appDomain}/reset-password?token=${resetToken}`;
 
-  try {
-    await sendEmail({
-      to: email,
-      subject: 'Reset your password',
-      html: `<p>Click <a href="${resetLink}">here</a> to reset your password!</p>`,
-    });
-  } catch (error) {
-    throw createHttpError(500, 'Failed to send the email, please try again later.');
-  }
+  const html = template({
+    name: user.name,
+    link: resetLink,
+  });
+
+  await sendEmail({
+    from: env("SMTP_FROM"),
+    to: email,
+    subject: "Reset your password",
+    html,
+  });
 };
 
 export const resetPassword = async (payload) => {

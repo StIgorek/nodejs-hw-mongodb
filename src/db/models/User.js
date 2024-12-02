@@ -17,11 +17,11 @@ export const userSchema = new Schema({
     type: String,
     required: true
   },
-  verify: {
-    type: Boolean,
-    default: false,
-    required: true
-  }
+  //verify: {
+  //  type: Boolean,
+  //  default: false,
+  //  required: true
+  //}
 }, { timestamps: true, versionKey: false, },);
 
 userSchema.methods.toJSON = function () {
