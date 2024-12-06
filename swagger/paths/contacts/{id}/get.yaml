@@ -1,21 +1,20 @@
-# swagger/paths/contacts/{id}/get.yaml
 tags:
   - Contacts
-summary: Get contact by id
-operationId: getContact
-description: 'Get contact by id'
+summary: Retrieve a contact by ID
+operationId: getContactById
+description: Get detailed information about a specific contact using its unique ID.
 security:
   - bearerAuth: []
 parameters:
-  - in: path
-    name: id
+  - name: id
+    in: path
     required: true
+    description: The ID of the contact to retrieve.
     schema:
       type: string
-      example: '65ca67e7ae7f10c88b598384'
 responses:
   '200':
-    description: 'Get contact by id'
+    description: Get contact by id
     content:
       application/json:
         schema:
@@ -30,9 +29,11 @@ responses:
               example: 200
             message:
               type: string
-              example: Successfully found contact with id 65ca67e7ae7f10c88b598384!
+              example: Successfully found contact with id!
             data:
               type: object
-              $ref: '../../../components/schemas/contact.yaml'
+              $ref: ../../../components/schemas/contact.yaml
   '401':
     $ref: '../../../components/responses/401.yaml'
+  '404':
+    $ref: '../../../components/responses/404.yaml'
